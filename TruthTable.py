@@ -1,9 +1,15 @@
 # -*- coding: utf-8 -*-
-
-
 """
-    To Display Truth Table for a given Valid Boolean Expression.
-    F = A.a + B.b
+    Displays Truth Table for a given Valid Boolean Expression.
+
+    F = A.b + B.a
+
+     A │ B │ Y
+    ───┼───┼─── 
+     0 │ 0 │ 0
+     0 │ 1 │ 1
+     1 │ 0 │ 1
+     1 │ 1 │ 0
 
     a :- compliment of A, (ie, A')
 """
@@ -11,7 +17,7 @@
 
 class BoolExpn :
 
-    unique = set()
+    unique = {}
     postfix = ''
     def __init__(self) :
         self.infix = '('
@@ -38,6 +44,7 @@ class BoolExpn :
     def in2postfix(self) :
 
         stack = []
+        k = 0
         for ch in self.infix :
 
             if ch.isspace() :
@@ -45,7 +52,9 @@ class BoolExpn :
 
             elif ch.isalpha() :
                 BoolExpn.postfix += ch
-                BoolExpn.unique.add(ch.upper())
+                if ch.upper() not in BoolExpn.unique :
+                    BoolExpn.unique[ch.upper()] = k
+                    k += 1
 
             elif ch in {'(', '!'} :
                 stack.append(ch)
@@ -62,6 +71,7 @@ class BoolExpn :
 
 
     def run(self) :
+        # dict{var : idx, ..},  idx : 0, 1, 2..... for TT order
         ''' dict{'a' : 1, 'A' : 0, 'B' : 1, 'C' : 0, ...} '''
         self.getInfix()
         self.in2postfix()
@@ -69,11 +79,12 @@ class BoolExpn :
 
 
 """
-    TODO : USE a as !A
+    USE a as !A
 """
 class TruthTable :
 
     def __init__(self) :
+        self.unique = BoolExpn.unique
         self.key = 65
         self.N = len(BoolExpn.unique)
         self.BoolInput = [0 for i in range(self.N)]
@@ -103,7 +114,10 @@ class TruthTable :
         stac = []
         for ch in self.postfix :
             if ch.isalpha() :
-                stac.append(self.BoolInput[ord(ch) - self.key])
+                if ch.islower() :
+                    stac.append( (self.BoolInput[self.unique[ch.upper()]])^1)
+                else :
+                    stac.append(self.BoolInput[self.unique[ch]])
             else :
                 y = stac.pop()
                 if ch == '!' :
@@ -116,8 +130,8 @@ class TruthTable :
 
     def printTable(self) :
 
-        for i in range(self.N) :
-            print(" %c │" % chr(self.key + i), end = "")
+        for i in self.unique :
+            print(" %c │" % i, end = "")
         print(" Y")
         print(f'{"───┼" * (self.N)}─── ')
 
